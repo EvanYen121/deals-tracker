@@ -195,7 +195,7 @@ function toggle(id, on) {
 }
 
 function fmtDate(s) { if (!s) return ''; const d = new Date(s + 'T12:00:00'); return isNaN(d) ? s : d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }); }
-function link(d) { const a = el('a', null, d.n); a.href = 'https://bookface.ycombinator.com/deals/' + d.id; a.target = '_blank'; a.rel = 'noopener noreferrer'; return a; }
+function link(d) { const a = el('a', null, d.n); a.href = data.link + d.id; a.target = '_blank'; a.rel = 'noopener noreferrer'; return a; }
 function box(id) {
   const c = el('input'); c.type = 'checkbox'; c.checked = !!claims.map[id]; c.disabled = busy.has(id);
   c.title = c.checked ? 'Mark as not claimed' : 'Mark as claimed';
