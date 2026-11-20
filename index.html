@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Deals Tracker</title>
+<style>
+:root{--bg:#fafaf8;--fg:#1d1d1b;--mut:#6b6b66;--line:#e4e3de;--card:#fff;--acc:#2f5d8a;--ok:#2e7d4f;--okbg:#e8f3ec;--warn:#9a6a12;--skip:#8a8a84;--chip:#eef1f4;--err:#b3261e}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#151514;--fg:#ecebe6;--mut:#9d9c96;--line:#2c2c2a;--card:#1d1d1c;--acc:#8db4dc;--ok:#6cc08f;--okbg:#1c2a21;--warn:#d9a94b;--skip:#7a7a75;--chip:#262a2f;--err:#f2867e}}
+:root[data-theme=dark]{--bg:#151514;--fg:#ecebe6;--mut:#9d9c96;--line:#2c2c2a;--card:#1d1d1c;--acc:#8db4dc;--ok:#6cc08f;--okbg:#1c2a21;--warn:#d9a94b;--skip:#7a7a75;--chip:#262a2f;--err:#f2867e}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Inter",system-ui,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:24px 16px 80px}
+header{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+h1{font-size:24px;margin:0}h2{font-size:17px;margin:28px 0 8px}
+.sub{color:var(--mut);margin:4px 0 14px}
+a{color:var(--acc);text-decoration:none}a:hover{text-decoration:underline}
+button{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:6px;padding:6px 12px}
+button.primary{background:var(--acc);border-color:var(--acc);color:#fff}
+button.link{border:0;background:none;color:var(--acc);padding:0}
+#who{color:var(--mut);font-size:13px}
+.note{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:12px 0}
+.err{color:var(--err)}
+.stats{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 4px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 14px;min-width:150px}
+.stat b{font-size:20px;display:block}.stat span{color:var(--mut);font-size:12px}
+.bar{position:sticky;top:0;z-index:2;background:var(--bg);padding:10px 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--line);margin-top:10px}
+.tabs{display:flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.tabs button{border:0;border-radius:0;background:var(--card);color:var(--mut)}
+.tabs button[aria-pressed=true]{background:var(--acc);color:#fff}
+input[type=search],select,input[type=password]{padding:7px 10px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--fg);font:inherit}
+input[type=search]{flex:1;min-width:180px}
+#status{font-size:12px;color:var(--mut);margin-left:auto;white-space:nowrap}
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+td,th{text-align:left;padding:7px 10px;border-top:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--mut);font-weight:600;border-top:0}
+tr.claimed td{background:var(--okbg)}
+td.c{width:34px;padding-right:0}td.n{white-space:nowrap;font-weight:600}td.num{text-align:right;color:var(--mut);white-space:nowrap}
+.d{color:var(--mut)}
+.by{font-size:12px;color:var(--ok);white-space:nowrap}
+.chip{display:inline-block;font-size:11px;padding:1px 7px;border-radius:10px;background:var(--chip);color:var(--mut);white-space:nowrap}
+.chip.when{font-weight:600}
+input[type=checkbox]{width:17px;height:17px;accent-color:var(--ok);cursor:pointer;margin:2px 0 0}
+input[type=checkbox]:disabled{cursor:progress;opacity:.5}
+details{margin:8px 0;background:var(--card);border:1px solid var(--line);border-radius:8px}
+summary{cursor:pointer;padding:9px 12px;font-weight:600}
+summary .cnt{color:var(--mut);font-weight:400}
+details table{border:0;border-radius:0}
+.v{font-size:11px;text-transform:uppercase;letter-spacing:.04em;margin-left:6px}.v.useful{color:var(--ok)}.v.maybe{color:var(--warn)}.v.skip{color:var(--skip)}
+.setup{max-width:620px}.setup ol{padding-left:20px}.setup li{margin:6px 0}
+.row{display:flex;gap:8px;margin-top:10px}.row input{flex:1}
+.empty{color:var(--mut);padding:14px}
+table.fx{table-layout:fixed}table.fx td.n{white-space:normal}table.fx .chip{white-space:normal;border-radius:8px}
+th.c{width:34px}th.dn{width:180px}th.fr{width:240px}th.cl{width:150px}
+@media (max-width:700px){td.d,th.d,td.hide,th.hide{display:none}td.n{white-space:normal}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><h1 id="title">Deals tracker</h1><div id="who"></div></header>
+  <p class="sub" id="sub">Private data, loaded with your GitHub token.</p>
+
+  <section id="setup" class="setup" hidden>
+    <div class="note">
+      <p style="margin-top:0">This page reads its data from a private GitHub repo, so it needs a GitHub token from an account that has access.</p>
+      <ol>
+        <li>Accept the invite to <a id="repoLink" target="_blank" rel="noopener">the repo</a> if you haven't.</li>
+        <li><a id="tokenLink" target="_blank" rel="noopener">Create a token</a> (classic, <code>repo</code> scope, any expiry). The repo owner can use a fine-grained token limited to that repo with Contents read/write instead.</li>
+        <li>Paste it below. It stays in this browser and is only sent to api.github.com.</li>
+      </ol>
+      <div class="row"><input id="tok" type="password" autocomplete="off" placeholder="ghp_… or github_pat_…"><button class="primary" id="save">Open</button></div>
+      <p id="setupErr" class="err" hidden></p>
+    </div>
+  </section>
+
+  <section id="app" hidden>
+    <div class="note" id="note"></div>
+    <div class="stats" id="stats"></div>
+    <div class="bar">
+      <div class="tabs"><button id="tabPicks" aria-pressed="true">Picks</button><button id="tabAll" aria-pressed="false">All deals</button></div>
+      <input type="search" id="q" placeholder="Search deals">
+      <select id="show"><option value="all">All</option><option value="open">Not claimed</option><option value="claimed">Claimed</option></select>
+      <span id="status"></span>
+    </div>
+    <div id="picksView"></div>
+    <div id="allView" hidden></div>
+  </section>
+</div>
+<script>
+'use strict';
+const OWNER = 'EvanYen121', REPO = 'deals-data', DATA = 'data/deals.json', CLAIMS = 'data/claims.json';
+const LOCAL = ['localhost', '127.0.0.1'].includes(location.hostname);
+const API = (LOCAL && new URLSearchParams(location.search).get('api')) || 'https://api.github.com';
+const TK = 'deals-tracker-token';
+const WHEN = ['Batch start', 'Now', 'When needed'];
+const $ = id => document.getElementById(id);
+const el = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
+
+let token = null, me = null, data = null, byId = {}, claims = { map: {}, sha: null };
+let view = 'picks';
+const busy = new Set();
+let queue = Promise.resolve();
+
+function store(k, v) { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} }
+function load(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+
+$('repoLink').href = `https://github.com/${OWNER}/${REPO}`;
+$('tokenLink').href = 'https://github.com/settings/tokens/new?scopes=repo&description=' + encodeURIComponent('Deals tracker');
+
+async function gh(path, opts = {}) {
+  const headers = { Authorization: 'Bearer ' + token, Accept: opts.accept || 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' };
+  if (opts.body) headers['Content-Type'] = 'application/json';
+  return fetch(API + path, { method: opts.method || 'GET', body: opts.body, headers, cache: 'no-store' });
+}
+const contents = p => `/repos/${OWNER}/${REPO}/contents/${p}`;
+function b64decode(s) { const bin = atob(s.replace(/\n/g, '')); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return new TextDecoder().decode(u); }
+function b64encode(str) { const u = new TextEncoder().encode(str); let bin = ''; for (let i = 0; i < u.length; i += 0x8000) bin += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(bin); }
+
+function showSetup(msg) {
+  $('app').hidden = true; $('setup').hidden = false; $('who').textContent = '';
+  $('sub').textContent = 'Private data, loaded with your GitHub token.';
+  const e = $('setupErr'); e.hidden = !msg; e.textContent = msg || '';
+}
+function setStatus(t, isErr) { const s = $('status'); s.textContent = t; s.className = isErr ? 'err' : ''; }
+
+async function loadClaims() {
+  const r = await gh(contents(CLAIMS));
+  if (r.status === 404) { claims = { map: {}, sha: null }; return; }
+  if (!r.ok) throw new Error('claims ' + r.status);
+  const j = await r.json();
+  claims = { map: JSON.parse(b64decode(j.content) || '{}'), sha: j.sha };
+}
+
+async function start() {
+  token = load(TK);
+  if (!token) return showSetup();
+  $('setup').hidden = true; $('sub').textContent = 'Loading…';
+  try {
+    const u = await gh('/user');
+    if (u.status === 401) { store(TK, null); return showSetup('GitHub rejected that token. Create a new one and paste it again.'); }
+    if (!u.ok) throw new Error('user ' + u.status);
+    me = (await u.json()).login;
+    const d = await gh(contents(DATA), { accept: 'application/vnd.github.raw+json' });
+    if (d.status === 404) return showSetup(`Signed in as ${me}, but that account can't see ${OWNER}/${REPO} yet. Accept the repo invite, or use a token with the repo scope.`);
+    if (!d.ok) throw new Error('data ' + d.status);
+    data = await d.json();
+    byId = Object.fromEntries(data.deals.map(x => [x.id, x]));
+    await loadClaims();
+  } catch (e) {
+    $('sub').textContent = ''; showSetup('Could not reach GitHub (' + e.message + '). Check your connection and reload.'); return;
+  }
+  document.title = data.title; $('title').textContent = data.title;
+  $('who').textContent = '';
+  $('who').append('Signed in as ' + me + ' · ');
+  const out = el('button', 'link', 'Forget token'); out.onclick = () => { store(TK, null); location.reload(); }; $('who').append(out);
+  $('sub').textContent = `${data.deals.length.toLocaleString()} Bookface deals pulled ${data.pulled}, grouped by what they're for. Claims save to the private repo for everyone.`;
+  $('note').textContent = data.note;
+  $('app').hidden = false;
+  render();
+  if (!start.polling) {
+    start.polling = true;
+    setInterval(refresh, 45000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
+  }
+}
+
+async function refresh() {
+  if (document.hidden || busy.size || !data) return;
+  try { const before = claims.sha; await loadClaims(); if (claims.sha !== before) render(); } catch (e) {}
+}
+
+function toggle(id, on) {
+  busy.add(id); render();
+  queue = queue.then(async () => {
+    const name = byId[id] ? byId[id].n : id;
+    setStatus('Saving…');
+    try {
+      for (let attempt = 0; attempt < 4; attempt++) {
+        const next = Object.assign({}, claims.map);
+        if (on) next[id] = { by: me, at: new Date().toISOString().slice(0, 10) }; else delete next[id];
+        const body = { message: `${on ? 'Claim' : 'Unclaim'}: ${name} (${me})`, content: b64encode(JSON.stringify(next, null, 1) + '\n') };
+        if (claims.sha) body.sha = claims.sha;
+        const r = await gh(contents(CLAIMS), { method: 'PUT', body: JSON.stringify(body) });
+        if (r.ok) { const j = await r.json(); claims = { map: next, sha: j.content.sha }; setStatus('Saved'); return; }
+        if (r.status === 409 || r.status === 422) { await loadClaims(); continue; }
+        if (r.status === 403 || r.status === 404) { setStatus('Your token can read but not write. It needs the repo scope, and you need write access.', true); return; }
+        setStatus('Save failed (' + r.status + ')', true); return;
+      }
+      setStatus('Save failed after retries. Reload and try again.', true);
+    } catch (e) { setStatus('Save failed: ' + e.message, true); }
+    finally { busy.delete(id); render(); }
+  });
+}
+
+function fmtDate(s) { if (!s) return ''; const d = new Date(s + 'T12:00:00'); return isNaN(d) ? s : d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }); }
+function link(d) { const a = el('a', null, d.n); a.href = 'https://bookface.ycombinator.com/deals/' + d.id; a.target = '_blank'; a.rel = 'noopener noreferrer'; return a; }
+function box(id) {
+  const c = el('input'); c.type = 'checkbox'; c.checked = !!claims.map[id]; c.disabled = busy.has(id);
+  c.title = c.checked ? 'Mark as not claimed' : 'Mark as claimed';
+  c.onchange = () => toggle(id, c.checked); return c;
+}
+function claimedCell(id) {
+  const c = claims.map[id], td = el('td', 'hide');
+  if (c) { td.append(el('span', 'by', '✓ ' + c.by + (c.at ? ' · ' + fmtDate(c.at) : ''))); if (c.note) td.append(el('div', 'd', c.note)); }
+  return td;
+}
+function matches(d, extra) {
+  const q = $('q').value.trim().toLowerCase(), show = $('show').value, cl = !!claims.map[d.id];
+  if (show === 'open' && cl) return false;
+  if (show === 'claimed' && !cl) return false;
+  return !q || (d.n + ' ' + d.d + ' ' + (extra || '')).toLowerCase().includes(q);
+}
+
+function renderStats() {
+  const picks = data.picks.flatMap(([, items]) => items.map(i => i[0]));
+  const done = picks.filter(i => claims.map[i]).length;
+  const byWhen = w => { const ids = data.picks.flatMap(([, items]) => items.filter(i => i[2] === w).map(i => i[0])); return `${ids.filter(i => claims.map[i]).length}/${ids.length}`; };
+  const s = $('stats'); s.textContent = '';
+  [[`${done}/${picks.length}`, 'picks claimed'], [byWhen('Now'), 'claim now'], [byWhen('Batch start'), 'at batch start (Jan)'], [byWhen('When needed'), 'when needed'], [String(Object.keys(claims.map).length), 'claims in total']]
+    .forEach(([b, t]) => { const d = el('div', 'stat'); d.append(el('b', null, b), el('span', null, t)); s.append(d); });
+}
+
+function renderPicks() {
+  const root = $('picksView'); root.textContent = '';
+  const all = data.picks.flatMap(([sec, items]) => items.map(([id, why, when]) => ({ id, why, when, sec })));
+  WHEN.forEach(w => {
+    const rows = all.filter(p => p.when === w && byId[p.id] && matches(byId[p.id], p.why + ' ' + p.sec));
+    if (!rows.length) return;
+    const left = rows.filter(p => !claims.map[p.id]).length;
+    root.append(el('h2', null, `${w} · ${left} left`));
+    const t = el('table', 'fx'); const h = t.insertRow();
+    [['', 'c'], ['Deal', 'dn'], ['Why', ''], ['For', 'hide fr'], ['Claimed', 'hide cl']].forEach(([x, c]) => h.append(el('th', c, x)));
+    rows.forEach(p => {
+      const d = byId[p.id], r = t.insertRow(); if (claims.map[p.id]) r.className = 'claimed';
+      const c0 = r.insertCell(); c0.className = 'c'; c0.append(box(p.id));
+      const c1 = r.insertCell(); c1.className = 'n'; c1.append(link(d));
+      const c2 = r.insertCell(); c2.textContent = p.why;
+      const c3 = r.insertCell(); c3.className = 'hide'; c3.append(el('span', 'chip', p.sec));
+      r.append(claimedCell(p.id));
+    });
+    root.append(t);
+  });
+  const st = data.student.filter(([id, , alt]) => byId[id] && matches(byId[id], byId[alt] ? byId[alt].n : ''));
+  if (st.length) {
+    const det = el('details'); const s = el('summary', null, 'Student deals on Evan\'s account: skip, the founder version is bigger '); s.append(el('span', 'cnt', st.length)); det.append(s);
+    const t = el('table'); const h = t.insertRow(); ['Student deal', 'Instead', 'Founder deal'].forEach(x => h.append(el('th', null, x)));
+    st.forEach(([id, why, alt]) => { const r = t.insertRow(); const a = r.insertCell(); a.className = 'n'; a.append(link(byId[id])); r.insertCell().textContent = why; const b = r.insertCell(); b.className = 'n'; if (byId[alt]) b.append(link(byId[alt])); });
+    det.append(t); root.append(det);
+  }
+  if (!root.childNodes.length) root.append(el('p', 'empty', 'Nothing matches.'));
+}
+
+const openGroups = new Set();
+function renderAll() {
+  const root = $('allView'); root.textContent = '';
+  const q = $('q').value.trim(), filtered = q || $('show').value !== 'all';
+  data.groups.forEach(([v, g]) => {
+    const rs = data.deals.filter(d => d.g === g && matches(d)).sort((a, b) => b.u - a.u);
+    if (!rs.length) return;
+    const det = el('details'); det.open = filtered || openGroups.has(g);
+    det.addEventListener('toggle', () => { if (!filtered) det.open ? openGroups.add(g) : openGroups.delete(g); });
+    const claimedN = rs.filter(d => claims.map[d.id]).length;
+    const s = el('summary', null, g + ' '); s.append(el('span', 'cnt', rs.length + (claimedN ? ` · ${claimedN} claimed` : '')), el('span', 'v ' + v, v)); det.append(s);
+    const t = el('table'); const h = t.insertRow();
+    [['', 'c'], ['Deal', ''], ['Audience', 'hide'], ['Users', 'hide'], ['Description', 'd'], ['Claimed', 'hide']].forEach(([x, c]) => h.append(el('th', c, x)));
+    rs.forEach(d => {
+      const r = t.insertRow(); if (claims.map[d.id]) r.className = 'claimed';
+      const c0 = r.insertCell(); c0.className = 'c'; c0.append(box(d.id));
+      const c1 = r.insertCell(); c1.className = 'n'; c1.append(link(d)); if (d.b) c1.append(' ', el('span', 'chip', d.b));
+      const c2 = r.insertCell(); c2.className = 'hide'; if (d.a) c2.append(el('span', 'chip', d.a));
+      const c3 = r.insertCell(); c3.className = 'num hide'; c3.textContent = d.u;
+      const c4 = r.insertCell(); c4.className = 'd'; c4.textContent = d.d;
+      r.append(claimedCell(d.id));
+    });
+    det.append(t); root.append(det);
+  });
+  if (!root.childNodes.length) root.append(el('p', 'empty', 'Nothing matches.'));
+}
+
+function render() {
+  if (!data) return;
+  renderStats();
+  $('picksView').hidden = view !== 'picks'; $('allView').hidden = view !== 'all';
+  $('tabPicks').setAttribute('aria-pressed', view === 'picks'); $('tabAll').setAttribute('aria-pressed', view === 'all');
+  view === 'picks' ? renderPicks() : renderAll();
+}
+
+$('tabPicks').onclick = () => { view = 'picks'; render(); };
+$('tabAll').onclick = () => { view = 'all'; render(); };
+$('q').addEventListener('input', render);
+$('show').addEventListener('change', render);
+$('save').onclick = () => { const v = $('tok').value.trim(); if (!v) return; store(TK, v); $('tok').value = ''; start(); };
+$('tok').addEventListener('keydown', e => { if (e.key === 'Enter') $('save').click(); });
+start();
+</script>
+</body>
+</html>
